@@ -61,6 +61,11 @@ namespace Server4Hololens
 
         private void button1_Click(object sender, EventArgs e)
         {
+            StartServer();
+        }
+
+        private void StartServer()
+        {
             if (!IsServerRunning)
             {
                 IsServerRunning = true;
@@ -78,14 +83,33 @@ namespace Server4Hololens
             }
         }
 
-        private void button2_Click(object sender, EventArgs e)
+        private void CloseServer()
         {
             if (IsServerRunning)
             {
-                CloseServer();
                 IsServerRunning = false;
+                if (workingConnection != null)
+                {
+                    tokenSource.Cancel();
+                    workingConnection.workingSocket.Shutdown(SocketShutdown.Both);
+                    workingConnection.workingSocket.Close();
+                    workingConnection = null;
+                }
+                label2.Text = "";
+                label3.Text = "";
                 Console.WriteLine("Closed Server");
             }
+        }
+
+        private void ResetServer()
+        {
+            CloseServer();
+            StartServer();
+        }
+
+        private void button2_Click(object sender, EventArgs e)
+        {    
+            CloseServer(); 
         }
 
         private Socket socketListener;
@@ -133,6 +157,7 @@ namespace Server4Hololens
             workingConnection = new StateObject();   
             workingConnection.workingSocket = socketListener.EndAccept(ar);
             OnClientConnected(workingConnection.workingSocket.RemoteEndPoint.ToString());
+            Console.WriteLine("Client Connected!");
         }
 
         private void ReadMessage()
@@ -159,10 +184,18 @@ namespace Server4Hololens
 
         private void Send(string data)
         {
-            if (workingConnection != null)
+            try
             {
                 byte[] byteData = Encoding.ASCII.GetBytes(data);
                 workingConnection.workingSocket.BeginSend(byteData, 0, byteData.Length, 0, new AsyncCallback(SendHandler), null);
+            }
+            catch
+            {
+                if (workingConnection != null)
+                {
+                    Console.WriteLine("Client ended the communication");
+                    ResetServer();
+                }
             }
         }
 
@@ -177,19 +210,6 @@ namespace Server4Hololens
             {
                 Console.WriteLine(e.ToString());
             }
-        }
-
-        private void CloseServer()
-        {
-            if (workingConnection != null)
-            {
-                tokenSource.Cancel();
-                workingConnection.workingSocket.Shutdown(SocketShutdown.Both);
-                workingConnection.workingSocket.Close();
-                workingConnection = null;
-            }
-            label2.Text = "";
-            label3.Text = "";
         }
 
         private void btnResponse_Click(object sender, EventArgs e)
@@ -244,7 +264,5 @@ namespace Server4Hololens
 
             Console.WriteLine("\n Communication finished. Press Enter to continue...");
         }
-
-
     }
 }
