@@ -5,6 +5,8 @@ VisualStudioVersion = 15.0.28307.168
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Server4Hololens", "Server4Hololens\Server4Hololens.csproj", "{1F698120-8ED3-494E-BB01-BFFF8EA5EC84}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "HololensServer", "HololensServer\HololensServer.csproj", "{FC074D71-F328-4A76-A910-DF2C808D3386}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -27,6 +29,18 @@ Global
 		{1F698120-8ED3-494E-BB01-BFFF8EA5EC84}.Release|x64.Build.0 = Release|Any CPU
 		{1F698120-8ED3-494E-BB01-BFFF8EA5EC84}.Release|x86.ActiveCfg = Release|Any CPU
 		{1F698120-8ED3-494E-BB01-BFFF8EA5EC84}.Release|x86.Build.0 = Release|Any CPU
+		{FC074D71-F328-4A76-A910-DF2C808D3386}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{FC074D71-F328-4A76-A910-DF2C808D3386}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{FC074D71-F328-4A76-A910-DF2C808D3386}.Debug|x64.ActiveCfg = Debug|Any CPU
+		{FC074D71-F328-4A76-A910-DF2C808D3386}.Debug|x64.Build.0 = Debug|Any CPU
+		{FC074D71-F328-4A76-A910-DF2C808D3386}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{FC074D71-F328-4A76-A910-DF2C808D3386}.Debug|x86.Build.0 = Debug|Any CPU
+		{FC074D71-F328-4A76-A910-DF2C808D3386}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{FC074D71-F328-4A76-A910-DF2C808D3386}.Release|Any CPU.Build.0 = Release|Any CPU
+		{FC074D71-F328-4A76-A910-DF2C808D3386}.Release|x64.ActiveCfg = Release|Any CPU
+		{FC074D71-F328-4A76-A910-DF2C808D3386}.Release|x64.Build.0 = Release|Any CPU
+		{FC074D71-F328-4A76-A910-DF2C808D3386}.Release|x86.ActiveCfg = Release|Any CPU
+		{FC074D71-F328-4A76-A910-DF2C808D3386}.Release|x86.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
