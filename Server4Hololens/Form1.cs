@@ -21,6 +21,7 @@ namespace Server4Hololens
         CancellationToken token;
         public IPAddress serverAddress;
         public int serverPort;
+        private bool IsListening = false;
 
         protected delegate void OnSendResponseHandler();
         protected event OnSendResponseHandler OnSendResponse;
@@ -50,18 +51,32 @@ namespace Server4Hololens
             label3.Text = remoteEndpoint;
         }
 
+        protected delegate void OnResetServerHandler();
+        protected event OnResetServerHandler OnResetServer;
+ 
         public Form1()
         {
             InitializeComponent();
-            ServerInitialize();
+            InitializeServer();
             OnReadRequest += ReadRequest;
             OnSendResponse += SendResponse;
             OnClientConnected += ClientConnected;
+            OnResetServer += ResetServer;
         }
 
         private void button1_Click(object sender, EventArgs e)
         {
             StartServer();
+        }
+
+        private void InitializeServer()
+        {
+            SetServerEndpointInfo();
+            IPEndPoint localEndPoint = new IPEndPoint(serverAddress, serverPort);
+            socketListener = new Socket(serverAddress.AddressFamily, SocketType.Stream, ProtocolType.Tcp);
+            socketListener.Bind(localEndPoint);
+            socketListener.Listen(1);
+            Console.WriteLine("Server has started");
         }
 
         private void StartServer()
@@ -75,10 +90,13 @@ namespace Server4Hololens
                 var listeningTask = Task.Run(() =>
                 {
                     ListenAsync(); //waits for client to connect and creates working socket.
-                });
-                listeningTask.ContinueWith((requestTask) =>
+                }).ContinueWith ((t) =>
                 {
-                    OnReadRequest(); //reads request type
+                    while (true)
+                    {
+                        if (!IsListening)
+                            ReadRequest();
+                    }   
                 });
             }
         }
@@ -95,16 +113,17 @@ namespace Server4Hololens
                     workingConnection.workingSocket.Close();
                     workingConnection = null;
                 }
-                label2.Text = "";
-                label3.Text = "";
+                //label2.Text = "";
+                //label3.Text = "";
                 Console.WriteLine("Closed Server");
             }
         }
 
         private void ResetServer()
         {
+            IsListening = false;
             CloseServer();
-            StartServer();
+            StartServer();  
         }
 
         private void button2_Click(object sender, EventArgs e)
@@ -133,16 +152,6 @@ namespace Server4Hololens
             serverPort = port;
         }
 
-        private void ServerInitialize()
-        {
-            SetServerEndpointInfo();
-            IPEndPoint localEndPoint = new IPEndPoint(serverAddress, serverPort);
-            socketListener = new Socket(serverAddress.AddressFamily, SocketType.Stream, ProtocolType.Tcp);
-            socketListener.Bind(localEndPoint);
-            socketListener.Listen(1);
-            Console.WriteLine("Server has started");
-        }
-
         private void ListenAsync()
         {
             clientConnected.Reset();
@@ -162,8 +171,18 @@ namespace Server4Hololens
 
         private void ReadMessage()
         {
-            if (workingConnection != null)
-                workingConnection.workingSocket.BeginReceive(workingConnection.buffer, 0, StateObject.BufferSize, 0, new AsyncCallback(ReadHandler), null);
+            try
+            {
+                if (workingConnection != null)
+                {
+                    IsListening = true;
+                    workingConnection.workingSocket.BeginReceive(workingConnection.buffer, 0, StateObject.BufferSize, 0, new AsyncCallback(ReadHandler), null);
+                }
+            }
+            catch
+            {
+                OnResetServer();
+            }         
         }
 
         private void ReadHandler(IAsyncResult ar)
@@ -175,10 +194,16 @@ namespace Server4Hololens
                 workingConnection.sb.Append(Encoding.ASCII.GetString(workingConnection.buffer, 0, bytesRead));
                 content = workingConnection.sb.ToString();
                 Console.WriteLine("Read {0} bytes from socket. \n Data : {1}", content.Length, content);
+                Array.Clear(workingConnection.buffer, 0, StateObject.BufferSize);
+                workingConnection.sb.Clear();
+                IsListening = false;
+                if (content.Length == 0)
+                    OnResetServer();
             }
             catch
             {
                 Console.WriteLine("Connection ended prematurely");
+                OnResetServer();
             }
         }
 
